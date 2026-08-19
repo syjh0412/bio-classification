@@ -1,0 +1,634 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>생물 분류 노선도 — 27장으로 5계 정복</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/orioncactus/pretendard@v1.3.9/dist/web/static/pretendard-dynamic-subset.css">
+<style>
+:root{
+  --ink:#0F2027;
+  --paper:#EDF2F5;
+  --surface:#FFFFFF;
+  --rule:#CBD8E0;
+  --muted:#5C7382;
+  --k-monera:#1F6FB2;
+  --k-protist:#B33C86;
+  --k-fungi:#C0731A;
+  --k-plant:#2C8656;
+  --k-animal:#5E46BE;
+  --route:#8FA6B4;
+  --sans:'Pretendard Variable',Pretendard,-apple-system,BlinkMacSystemFont,'Apple SD Gothic Neo','Malgun Gothic',sans-serif;
+  --mono:ui-monospace,SFMono-Regular,'SF Mono',Menlo,Consolas,monospace;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+[hidden]{display:none!important}
+html{-webkit-text-size-adjust:100%}
+body{
+  font-family:var(--sans);background:var(--paper);color:var(--ink);line-height:1.6;
+  padding:20px 16px 56px;
+  background-image:repeating-linear-gradient(180deg,transparent 0 39px,rgba(15,32,39,.035) 39px 40px);
+}
+.wrap{max-width:1080px;margin:0 auto}
+
+header{
+  display:flex;flex-wrap:wrap;align-items:flex-end;gap:14px;
+  border-bottom:2px solid var(--ink);padding-bottom:12px;margin-bottom:24px;
+}
+h1{font-size:clamp(22px,3.4vw,32px);font-weight:800;letter-spacing:-.03em;line-height:1.15}
+h1 small{display:block;font-size:12px;font-weight:600;letter-spacing:.22em;color:var(--muted);margin-bottom:6px}
+.head-tools{margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap}
+.counter{font-family:var(--mono);font-size:12px;color:var(--muted);letter-spacing:.05em}
+.streak{font-size:12px;font-weight:800;color:#fff;background:var(--k-fungi);border-radius:999px;padding:4px 12px;letter-spacing:-.01em}
+
+button{font-family:inherit;font-size:inherit;cursor:pointer;border:none;background:none;color:inherit}
+button:focus-visible{outline:3px solid var(--k-monera);outline-offset:2px}
+.btn{
+  border:1.5px solid var(--ink);background:var(--surface);border-radius:999px;
+  padding:7px 16px;font-size:13px;font-weight:700;letter-spacing:-.01em;
+  transition:background .15s,color .15s;
+}
+.btn:hover{background:var(--ink);color:var(--surface)}
+.btn.ghost{border-color:var(--rule);color:var(--muted);font-weight:600}
+.btn.ghost:hover{border-color:var(--ink);background:transparent;color:var(--ink)}
+.btn.big{padding:12px 28px;font-size:15px;background:var(--ink);color:var(--surface)}
+.btn.big:hover{background:#000}
+
+.panel{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:28px}
+.intro p{max-width:62ch;color:#33505F;margin-bottom:14px}
+.intro .lead{font-size:19px;font-weight:600;color:var(--ink);letter-spacing:-.02em}
+.start-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}
+
+.card-grid-wrap{margin-top:26px;border-top:1px dashed var(--rule);padding-top:22px}
+.card-grid-wrap h3{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--muted);margin-bottom:4px}
+.card-grid-wrap p{font-size:13px;color:var(--muted);margin-bottom:14px}
+.card-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(104px,1fr));gap:8px}
+.org-btn{
+  border:1.5px solid var(--rule);background:var(--surface);border-radius:4px;
+  padding:9px 6px;font-size:13.5px;font-weight:700;letter-spacing:-.02em;
+  transition:border-color .15s,background .15s;
+}
+.org-btn:hover{border-color:var(--ink);background:#F4F8FA}
+.org-btn.done{border-color:var(--kc);color:var(--kc)}
+.org-btn.done::after{content:' ✓'}
+
+.board{display:grid;grid-template-columns:minmax(0,340px) minmax(0,1fr);gap:20px;align-items:start}
+@media(max-width:800px){.board{grid-template-columns:1fr}}
+
+.specimen{background:var(--surface);border:1px solid var(--rule);border-radius:4px;overflow:hidden;position:sticky;top:16px}
+@media(max-width:800px){.specimen{position:static}}
+.spec-art{
+  background:#F4F8FA;border-bottom:1px solid var(--rule);
+  display:flex;align-items:center;justify-content:center;padding:14px 10px 10px;
+}
+.spec-art svg{width:min(220px,70%);height:auto;display:block}
+.specimen-head{padding:14px 20px 14px;border-bottom:1px dashed var(--rule)}
+.spec-no{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted)}
+.spec-name{font-size:clamp(28px,6vw,40px);font-weight:800;letter-spacing:-.045em;line-height:1.05;margin-top:2px}
+.spec-hook{font-size:13px;color:var(--muted);margin-top:7px;font-weight:600;line-height:1.5}
+.traits{padding:14px 20px 20px}
+.traits h3{font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--muted);margin-bottom:10px}
+.traits li{
+  list-style:none;font-size:14px;line-height:1.55;padding:7px 10px 7px 22px;
+  position:relative;border-radius:3px;transition:background .25s,box-shadow .25s;
+}
+.traits li::before{content:'';position:absolute;left:8px;top:15px;width:5px;height:5px;border-radius:50%;background:var(--route)}
+.traits li.flag{background:#FFF3D6;box-shadow:inset 2px 0 0 var(--k-fungi)}
+.traits li.flag::before{background:var(--k-fungi)}
+
+.route{background:var(--surface);border:1px solid var(--rule);border-radius:4px;padding:26px 24px 22px}
+.route h2{font-size:11px;font-weight:700;letter-spacing:.16em;color:var(--muted);margin-bottom:18px}
+#stations{list-style:none;position:relative;padding-left:30px}
+#stations::before{
+  content:'';position:absolute;left:8px;top:6px;bottom:14px;width:3px;
+  background:var(--route);border-radius:2px;transition:background .5s ease;
+}
+.route.done #stations::before{background:var(--kc)}
+.station{position:relative;padding-bottom:22px}
+.station .dot{
+  position:absolute;left:-30px;top:3px;width:19px;height:19px;border-radius:50%;
+  background:var(--surface);border:3px solid var(--route);transition:border-color .5s ease;
+}
+.route.done .station .dot{border-color:var(--kc)}
+.station .q{font-size:16px;font-weight:700;letter-spacing:-.02em;line-height:1.4}
+.station .a{
+  display:inline-block;margin-top:6px;font-family:var(--mono);font-size:12px;font-weight:600;
+  letter-spacing:.06em;color:var(--muted);border:1px solid var(--rule);border-radius:999px;padding:2px 11px;
+}
+.station.current .dot{border-color:var(--ink);background:var(--ink);box-shadow:0 0 0 5px rgba(15,32,39,.1)}
+.answers{display:flex;gap:10px;margin-top:14px}
+.ans{
+  border:1.5px solid var(--ink);background:var(--surface);border-radius:3px;
+  padding:11px 30px;font-weight:800;font-size:15px;letter-spacing:-.01em;
+  transition:transform .1s,background .15s,color .15s;
+}
+.ans:hover{background:var(--ink);color:var(--surface)}
+.ans:active{transform:translateY(1px)}
+.hint{
+  margin-top:14px;font-size:14px;line-height:1.6;background:#FFF3D6;
+  border-left:3px solid var(--k-fungi);padding:11px 14px;border-radius:0 3px 3px 0;
+}
+.hint b{font-weight:800}
+
+.result{border-top:2px solid var(--ink);margin-top:6px;padding-top:20px}
+.verdict{display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}
+.verdict .label{font-family:var(--mono);font-size:11px;letter-spacing:.14em;color:var(--muted)}
+.verdict .name{font-size:clamp(26px,5vw,36px);font-weight:800;letter-spacing:-.04em;color:var(--kc)}
+.badge{font-size:12px;font-weight:700;padding:4px 12px;border-radius:999px;background:var(--kc);color:#fff}
+.note{margin-top:14px;font-size:15px;line-height:1.7;color:#33505F;max-width:62ch}
+.note strong{color:var(--ink);font-weight:700}
+.result .start-row{margin-top:20px}
+
+.tally{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:12px;margin-top:20px}
+.tally-card{border:1px solid var(--rule);border-radius:4px;padding:14px 16px;border-top:4px solid var(--kc)}
+.tally-card h4{font-size:14px;font-weight:800;color:var(--kc);letter-spacing:-.02em;margin-bottom:8px}
+.tally-card li{list-style:none;font-size:13.5px;padding:2px 0;color:#33505F}
+.score{font-size:17px;font-weight:700;letter-spacing:-.02em}
+.score em{font-style:normal;font-size:30px;font-weight:800}
+
+dialog{
+  border:1px solid var(--ink);border-radius:4px;padding:0;max-width:min(760px,94vw);
+  background:var(--surface);color:var(--ink);
+}
+dialog::backdrop{background:rgba(15,32,39,.55)}
+.dlg-head{display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--rule)}
+.dlg-head h2{font-size:16px;font-weight:800;letter-spacing:-.02em}
+.dlg-body{padding:8px 12px 20px;overflow-x:auto}
+svg.key{display:block;width:100%;min-width:560px;height:auto}
+.key text{font-family:var(--sans);fill:var(--ink)}
+.key .qbox{fill:#fff;stroke:#0F2027;stroke-width:1.5}
+.key .qt{font-size:12.5px;font-weight:700}
+.key .lbl{font-size:11px;fill:#5C7382;font-weight:600}
+.key .kt{font-size:13px;font-weight:800;fill:#fff}
+
+@media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <h1><small>중학교 과학 1 · 생물의 다양성</small>생물 분류 노선도</h1>
+  <div class="head-tools">
+    <span class="streak" id="streakChip" hidden></span>
+    <span class="counter" id="counter" hidden></span>
+    <button class="btn ghost" id="homeBtn" hidden>홈으로</button>
+    <button class="btn ghost" id="mapBtn">전체 노선도</button>
+  </div>
+</header>
+
+<!-- 홈 화면 -->
+<section class="panel intro" id="intro">
+  <p class="lead">생물 카드 27장. 관찰 기록만 보고 갈림길을 통과해, 다섯 개의 계 중 하나에 도착하세요.</p>
+  <p>카드에 계는 적혀 있지 않습니다. 이름에 속지 마세요. <b>짚신벌레</b>는 벌레가 아니고, <b>젖산균</b>은 균계가 아닙니다. 길을 잘못 들면 다시 봐야 할 관찰 기록에 노란 표시가 뜹니다.</p>
+
+  <div class="start-row">
+    <button class="btn big" id="startOrder">27장 전체 도전</button>
+    <button class="btn" id="startShuffle">무작위로 섞어 도전</button>
+  </div>
+
+  <div class="card-grid-wrap">
+    <h3>골라서 풀기</h3>
+    <p>궁금한 생물만 눌러서 바로 분류해 볼 수 있습니다. 완료한 카드에는 ✓ 표시가 남습니다.</p>
+    <div class="card-grid" id="cardGrid"></div>
+  </div>
+</section>
+
+<!-- 게임 화면 -->
+<section class="board" id="board" hidden>
+  <aside class="specimen">
+    <div class="spec-art" id="specArt" aria-hidden="true"></div>
+    <div class="specimen-head">
+      <div class="spec-no" id="specNo"></div>
+      <div class="spec-name" id="specName">—</div>
+      <div class="spec-hook" id="specHook"></div>
+    </div>
+    <div class="traits">
+      <h3>관찰 기록</h3>
+      <ul id="traitList"></ul>
+    </div>
+  </aside>
+
+  <div class="route" id="routeBox">
+    <h2>지나온 길</h2>
+    <ol id="stations"></ol>
+    <div id="resultBox"></div>
+  </div>
+</section>
+
+<!-- 전체 도전 마무리 -->
+<section class="panel" id="summary" hidden>
+  <h2 style="font-size:24px;font-weight:800;letter-spacing:-.03em">27장을 모두 통과했습니다</h2>
+  <p class="score" style="margin-top:12px">한 번에 도착 <em id="cleanCount">0</em> / 27 <span style="font-size:14px;color:var(--muted);font-weight:600">· 최고 연속 기록 <b id="bestStreak">0</b>장</span></p>
+  <p style="color:var(--muted);font-size:14px;margin-top:4px" id="summaryLine"></p>
+  <div class="tally" id="tally"></div>
+  <div class="start-row" style="margin-top:24px">
+    <button class="btn big" id="goHome">홈으로</button>
+    <button class="btn" id="againShuffle">섞어서 다시 도전</button>
+  </div>
+</section>
+
+</div>
+
+<!-- 전체 노선도 -->
+<dialog id="mapDlg">
+  <div class="dlg-head">
+    <h2>5계 분류 검색표</h2>
+    <button class="btn ghost" style="margin-left:auto" id="mapClose">닫기</button>
+  </div>
+  <div class="dlg-body">
+    <svg class="key" viewBox="0 0 720 430" role="img" aria-label="다섯 계로 나누는 분류 검색표">
+      <path d="M92 64 V366" stroke="#8FA6B4" stroke-width="3" fill="none"/>
+      <rect class="qbox" x="24" y="42" width="272" height="44" rx="4"/>
+      <text class="qt" x="40" y="70">세포에 뚜렷한 핵이 있는가?</text>
+      <path d="M296 64 H452" stroke="#8FA6B4" stroke-width="3" fill="none"/>
+      <text class="lbl" x="330" y="56">아니요</text>
+      <rect x="452" y="46" width="146" height="36" rx="18" fill="#1F6FB2"/>
+      <text class="kt" x="482" y="69">원핵생물계</text>
+      <text class="lbl" x="100" y="104">예</text>
+      <rect class="qbox" x="24" y="120" width="272" height="60" rx="4"/>
+      <text class="qt" x="40" y="144">대부분 다세포생물이며,</text>
+      <text class="qt" x="40" y="164">실 모양의 균사를 가지고 있는가?</text>
+      <path d="M296 150 H452" stroke="#8FA6B4" stroke-width="3" fill="none"/>
+      <text class="lbl" x="340" y="142">예</text>
+      <rect x="452" y="132" width="146" height="36" rx="18" fill="#C0731A"/>
+      <text class="kt" x="508" y="155">균계</text>
+      <text class="lbl" x="100" y="198">아니요</text>
+      <rect class="qbox" x="24" y="214" width="272" height="44" rx="4"/>
+      <text class="qt" x="40" y="242">기관이 발달하였는가?</text>
+      <path d="M296 236 H452" stroke="#8FA6B4" stroke-width="3" fill="none"/>
+      <text class="lbl" x="330" y="228">아니요</text>
+      <rect x="452" y="218" width="146" height="36" rx="18" fill="#B33C86"/>
+      <text class="kt" x="482" y="241">원생생물계</text>
+      <text class="lbl" x="100" y="276">예</text>
+      <rect class="qbox" x="24" y="292" width="272" height="44" rx="4"/>
+      <text class="qt" x="40" y="320">광합성을 하는가?</text>
+      <path d="M296 314 H452" stroke="#8FA6B4" stroke-width="3" fill="none"/>
+      <text class="lbl" x="340" y="306">예</text>
+      <rect x="452" y="296" width="146" height="36" rx="18" fill="#2C8656"/>
+      <text class="kt" x="500" y="319">식물계</text>
+      <text class="lbl" x="100" y="354">아니요</text>
+      <path d="M92 366 H452" stroke="#8FA6B4" stroke-width="3" fill="none"/>
+      <rect x="452" y="348" width="146" height="36" rx="18" fill="#5E46BE"/>
+      <text class="kt" x="500" y="371">동물계</text>
+    </svg>
+  </div>
+</dialog>
+
+<script>
+const KC = {
+  '원핵생물계':'var(--k-monera)','원생생물계':'var(--k-protist)',
+  '균계':'var(--k-fungi)','식물계':'var(--k-plant)','동물계':'var(--k-animal)'
+};
+
+const Q = {
+  nuc:'세포에 뚜렷한 핵이 있는가?',
+  hyphae:'대부분 다세포생물이며, 실 모양의 균사를 가지고 있는가?',
+  organ:'잎·줄기·뿌리 같은 기관이 발달하였는가?',
+  photo:'광합성을 하는가?'
+};
+
+/* 동아 교과서 순서: 핵 → 균사 → 기관 → 광합성 */
+const PATHS = {
+  '원핵생물계':[['nuc','n']],
+  '균계':[['nuc','y'],['hyphae','y']],
+  '원생생물계':[['nuc','y'],['hyphae','n'],['organ','n']],
+  '식물계':[['nuc','y'],['hyphae','n'],['organ','y'],['photo','y']],
+  '동물계':[['nuc','y'],['hyphae','n'],['organ','y'],['photo','n']]
+};
+
+/* ── 그림 (단순 도해) ── */
+const ART = {
+'남세균':`<svg viewBox="0 0 200 120"><g fill="#2E8B8B" stroke="#1D6363" stroke-width="2"><circle cx="35" cy="62" r="13"/><circle cx="60" cy="52" r="13"/><circle cx="86" cy="58" r="13"/><circle cx="112" cy="66" r="13"/><circle cx="138" cy="58" r="13"/><circle cx="163" cy="50" r="13"/></g><g fill="#1D6363"><circle cx="35" cy="62" r="3"/><circle cx="60" cy="52" r="3"/><circle cx="86" cy="58" r="3"/><circle cx="112" cy="66" r="3"/><circle cx="138" cy="58" r="3"/><circle cx="163" cy="50" r="3"/></g></svg>`,
+'대장균':`<svg viewBox="0 0 200 120"><g fill="#C87BA8" stroke="#8F4E77" stroke-width="2"><rect x="30" y="34" width="62" height="24" rx="12"/><rect x="104" y="52" width="62" height="24" rx="12"/><rect x="58" y="76" width="62" height="24" rx="12"/></g><g stroke="#8F4E77" stroke-width="2" fill="none" stroke-linecap="round"><path d="M92 42 q14 -8 22 -16"/><path d="M166 60 q14 6 20 14"/><path d="M120 92 q14 8 22 12"/></g></svg>`,
+'콜레라균':`<svg viewBox="0 0 200 120"><path d="M52 76 Q78 40 128 54" fill="none" stroke="#8F4E77" stroke-width="24" stroke-linecap="round"/><path d="M52 76 Q78 40 128 54" fill="none" stroke="#C87BA8" stroke-width="18" stroke-linecap="round"/><path d="M128 54 q22 -6 38 -22 q-8 14 4 10" fill="none" stroke="#8F4E77" stroke-width="3" stroke-linecap="round"/></svg>`,
+'젖산균':`<svg viewBox="0 0 200 120"><g fill="#C87BA8" stroke="#8F4E77" stroke-width="2"><rect x="30" y="30" width="52" height="20" rx="10"/><rect x="86" y="30" width="52" height="20" rx="10"/><rect x="52" y="62" width="52" height="20" rx="10"/><rect x="108" y="62" width="52" height="20" rx="10"/><rect x="76" y="92" width="52" height="20" rx="10"/></g></svg>`,
+'포도상구균':`<svg viewBox="0 0 200 120"><g fill="#E0A83C" stroke="#A5761E" stroke-width="2"><circle cx="82" cy="40" r="15"/><circle cx="112" cy="34" r="15"/><circle cx="66" cy="66" r="15"/><circle cx="96" cy="62" r="15"/><circle cx="126" cy="58" r="15"/><circle cx="82" cy="90" r="15"/><circle cx="112" cy="86" r="15"/><circle cx="140" cy="82" r="15"/></g></svg>`,
+'미역':`<svg viewBox="0 0 200 120"><g fill="#5B7F3A" stroke="#3D5726" stroke-width="2"><path d="M100 108 C 92 80 72 74 66 46 C 62 28 76 18 82 30 C 90 46 96 66 100 108Z"/><path d="M100 108 C 100 76 96 52 102 30 C 106 16 122 20 118 34 C 112 56 106 80 100 108Z"/><path d="M100 108 C 108 84 124 74 132 52 C 138 36 152 44 144 56 C 130 76 112 88 100 108Z"/></g><path d="M88 108 h24 l-4 8 h-16 Z" fill="#3D5726"/></svg>`,
+'다시마':`<svg viewBox="0 0 200 120"><path d="M100 112 C 96 84 90 70 94 44 C 96 28 90 22 96 12 C 104 4 112 14 108 26 C 104 40 112 62 106 84 C 104 96 102 104 100 112Z" fill="#6B6234" stroke="#463F1E" stroke-width="2"/><path d="M92 112 h18 l-3 6 h-12 Z" fill="#463F1E"/></svg>`,
+'파래':`<svg viewBox="0 0 200 120"><path d="M60 84 C 50 62 66 40 88 36 C 104 32 118 22 136 30 C 154 38 152 58 140 68 C 150 74 144 90 128 90 C 116 98 92 100 78 92 C 68 92 62 90 60 84Z" fill="#63B04A" stroke="#3E7A2C" stroke-width="2" opacity=".9"/></svg>`,
+'짚신벌레':`<svg viewBox="0 0 200 120"><ellipse cx="100" cy="60" rx="62" ry="28" fill="#B9C7D6" stroke="#5C7382" stroke-width="2" transform="rotate(-12 100 60)"/><path d="M72 66 q14 8 30 4" fill="none" stroke="#5C7382" stroke-width="2"/><circle cx="118" cy="48" r="8" fill="#5C7382" opacity=".55"/><g stroke="#5C7382" stroke-width="1.6" stroke-linecap="round"><path d="M44 44 l-8 -6"/><path d="M56 34 l-6 -8"/><path d="M74 27 l-4 -9"/><path d="M94 25 l-1 -9"/><path d="M114 27 l2 -9"/><path d="M134 33 l5 -8"/><path d="M150 44 l7 -7"/><path d="M158 60 l9 -3"/><path d="M152 76 l9 3"/><path d="M138 88 l6 8"/><path d="M118 94 l4 9"/><path d="M96 95 l1 9"/><path d="M76 92 l-3 9"/><path d="M58 84 l-6 8"/><path d="M46 72 l-9 5"/><path d="M42 58 l-9 0"/></g></svg>`,
+'아메바':`<svg viewBox="0 0 200 120"><path d="M64 74 C 44 66 48 42 70 38 C 78 24 102 22 112 34 C 130 26 150 38 144 54 C 160 58 158 78 140 82 C 138 96 118 102 106 92 C 96 104 74 100 72 88 C 62 86 58 80 64 74Z" fill="#C9B8E0" stroke="#8268AC" stroke-width="2"/><circle cx="102" cy="60" r="10" fill="#8268AC" opacity=".7"/><circle cx="126" cy="66" r="4" fill="#8268AC" opacity=".4"/><circle cx="84" cy="52" r="3" fill="#8268AC" opacity=".4"/></svg>`,
+'표고버섯':`<svg viewBox="0 0 200 120"><path d="M46 62 C 46 34 154 34 154 62 L 46 62Z" fill="#8A5A33" stroke="#5C3A1E" stroke-width="2"/><path d="M60 50 l8 -6 M92 42 l8 -5 M126 46 l9 -5" stroke="#D9C9B4" stroke-width="4" stroke-linecap="round"/><rect x="88" y="62" width="24" height="34" rx="6" fill="#E8DCC8" stroke="#B09A78" stroke-width="2"/><g stroke="#B09A78" stroke-width="1.6"><path d="M100 96 q0 12 -14 16"/><path d="M100 96 q0 12 14 16"/><path d="M100 96 q0 14 0 18"/></g></svg>`,
+'느타리버섯':`<svg viewBox="0 0 200 120"><g stroke="#7D7466" stroke-width="2"><path d="M56 70 C 40 44 96 30 104 56 C 106 66 96 72 84 72 C 72 74 60 76 56 70Z" fill="#B8AE9E"/><path d="M96 84 C 84 56 144 44 150 70 C 152 80 140 86 128 86 C 116 87 100 90 96 84Z" fill="#C6BCAC"/><path d="M74 100 C 66 78 116 70 120 90 C 121 98 112 102 102 102 C 92 103 78 106 74 100Z" fill="#B0A696"/></g></svg>`,
+'푸른곰팡이':`<svg viewBox="0 0 200 120"><g stroke="#6E7F71" stroke-width="2.4" fill="none"><path d="M60 108 V56"/><path d="M100 108 V48"/><path d="M140 108 V58"/></g><g fill="#4E8F86"><circle cx="52" cy="48" r="6"/><circle cx="62" cy="42" r="6"/><circle cx="70" cy="50" r="6"/><circle cx="92" cy="40" r="6"/><circle cx="102" cy="34" r="6"/><circle cx="110" cy="42" r="6"/><circle cx="132" cy="50" r="6"/><circle cx="142" cy="44" r="6"/><circle cx="150" cy="52" r="6"/></g><path d="M40 108 h120" stroke="#B8AE9E" stroke-width="4" stroke-linecap="round"/></svg>`,
+'누룩곰팡이':`<svg viewBox="0 0 200 120"><g stroke="#8A7B5C" stroke-width="2.4" fill="none"><path d="M64 108 V54"/><path d="M104 108 V46"/><path d="M142 108 V56"/></g><g fill="#D2A438"><circle cx="64" cy="46" r="10"/><circle cx="104" cy="38" r="10"/><circle cx="142" cy="48" r="10"/></g><g fill="#A5761E"><circle cx="64" cy="46" r="4"/><circle cx="104" cy="38" r="4"/><circle cx="142" cy="48" r="4"/></g><path d="M44 108 h116" stroke="#B8AE9E" stroke-width="4" stroke-linecap="round"/></svg>`,
+'효모':`<svg viewBox="0 0 200 120"><ellipse cx="92" cy="62" rx="36" ry="30" fill="#E3CDA4" stroke="#A98F5E" stroke-width="2"/><ellipse cx="138" cy="42" rx="16" ry="13" fill="#E3CDA4" stroke="#A98F5E" stroke-width="2"/><circle cx="88" cy="60" r="8" fill="#A98F5E" opacity=".6"/><circle cx="140" cy="42" r="4" fill="#A98F5E" opacity=".5"/></svg>`,
+'민들레':`<svg viewBox="0 0 200 120"><path d="M100 112 V64" stroke="#4E7A34" stroke-width="4"/><path d="M100 96 C 84 96 74 104 62 100 C 74 92 82 84 100 88Z" fill="#5B8F3C"/><path d="M100 102 C 116 100 126 108 140 104 C 128 94 118 90 100 94Z" fill="#5B8F3C"/><g fill="#F2C230" stroke="#C79A16" stroke-width="1.4"><ellipse cx="100" cy="42" rx="10" ry="20"/><ellipse cx="100" cy="42" rx="10" ry="20" transform="rotate(45 100 42)"/><ellipse cx="100" cy="42" rx="10" ry="20" transform="rotate(90 100 42)"/><ellipse cx="100" cy="42" rx="10" ry="20" transform="rotate(135 100 42)"/></g><circle cx="100" cy="42" r="9" fill="#E0A83C"/></svg>`,
+'소나무':`<svg viewBox="0 0 200 120"><rect x="93" y="82" width="14" height="30" fill="#8A5A33"/><g fill="#2C6E43" stroke="#1C4A2C" stroke-width="2"><path d="M100 8 L134 44 H66 Z"/><path d="M100 28 L142 68 H58 Z"/><path d="M100 50 L150 90 H50 Z"/></g></svg>`,
+'고사리':`<svg viewBox="0 0 200 120"><path d="M100 112 C 100 70 96 46 106 22" fill="none" stroke="#3E7A2C" stroke-width="4" stroke-linecap="round"/><g fill="#63B04A" stroke="#3E7A2C" stroke-width="1.4"><ellipse cx="82" cy="92" rx="16" ry="7" transform="rotate(-24 82 92)"/><ellipse cx="118" cy="86" rx="16" ry="7" transform="rotate(20 118 86)"/><ellipse cx="80" cy="70" rx="15" ry="6.5" transform="rotate(-26 80 70)"/><ellipse cx="116" cy="64" rx="15" ry="6.5" transform="rotate(22 116 64)"/><ellipse cx="84" cy="48" rx="13" ry="6" transform="rotate(-28 84 48)"/><ellipse cx="116" cy="44" rx="13" ry="6" transform="rotate(24 116 44)"/><ellipse cx="94" cy="30" rx="10" ry="5" transform="rotate(-30 94 30)"/></g><path d="M106 22 q10 -4 6 -14" fill="none" stroke="#3E7A2C" stroke-width="3.4" stroke-linecap="round"/></svg>`,
+'매발톱꽃':`<svg viewBox="0 0 200 120"><path d="M100 112 C 100 84 98 72 100 60" fill="none" stroke="#4E7A34" stroke-width="4" stroke-linecap="round"/><g fill="#7B5BB5" stroke="#54398A" stroke-width="1.4"><path d="M100 56 q-24 -18 -16 -40 q10 12 16 20 q6 -8 16 -20 q8 22 -16 40Z"/><path d="M100 58 q-30 -6 -38 -24 q16 2 26 8 M100 58 q30 -6 38 -24 q-16 2 -26 8" fill="none" stroke-width="6" stroke-linecap="round"/></g><g fill="#D9CCF2" stroke="#54398A" stroke-width="1.2"><ellipse cx="86" cy="62" rx="9" ry="13" transform="rotate(-24 86 62)"/><ellipse cx="114" cy="62" rx="9" ry="13" transform="rotate(24 114 62)"/><ellipse cx="100" cy="68" rx="9" ry="13"/></g><circle cx="100" cy="66" r="5" fill="#F2C230"/></svg>`,
+'끈끈이주걱':`<svg viewBox="0 0 200 120"><path d="M100 112 C 100 92 98 84 100 74" fill="none" stroke="#4E7A34" stroke-width="4" stroke-linecap="round"/><ellipse cx="100" cy="56" rx="34" ry="22" fill="#B84A46" stroke="#7E2C29" stroke-width="2"/><g stroke="#7E2C29" stroke-width="1.6"><g fill="#F0B7B5"><circle cx="76" cy="44" r="4"/><circle cx="92" cy="36" r="4"/><circle cx="110" cy="36" r="4"/><circle cx="126" cy="46" r="4"/><circle cx="70" cy="58" r="4"/><circle cx="130" cy="60" r="4"/><circle cx="86" cy="52" r="3.4"/><circle cx="102" cy="48" r="3.4"/><circle cx="116" cy="54" r="3.4"/></g></g></svg>`,
+'개나리':`<svg viewBox="0 0 200 120"><path d="M36 96 C 76 66 128 48 168 40" fill="none" stroke="#7A5A3A" stroke-width="4" stroke-linecap="round"/><g fill="#F2C230" stroke="#C79A16" stroke-width="1.3"><g transform="translate(70,72)"><ellipse rx="5" ry="11"/><ellipse rx="5" ry="11" transform="rotate(90)"/></g><g transform="translate(104,56) rotate(20)"><ellipse rx="5" ry="11"/><ellipse rx="5" ry="11" transform="rotate(90)"/></g><g transform="translate(138,46) rotate(-14)"><ellipse rx="5" ry="11"/><ellipse rx="5" ry="11" transform="rotate(90)"/></g></g></svg>`,
+'상어':`<svg viewBox="0 0 200 120"><path d="M28 66 C 52 44 120 40 150 56 L 176 40 L 168 64 L 176 86 L 150 72 C 120 86 54 84 28 66Z" fill="#7A93A8" stroke="#4A6072" stroke-width="2"/><path d="M96 50 L 108 26 L 120 50Z" fill="#7A93A8" stroke="#4A6072" stroke-width="2"/><path d="M88 78 l10 14 l6 -12" fill="#7A93A8" stroke="#4A6072" stroke-width="2"/><circle cx="54" cy="60" r="3.6" fill="#22333F"/><path d="M40 68 q10 4 18 2" fill="none" stroke="#4A6072" stroke-width="2"/><g stroke="#4A6072" stroke-width="1.6"><path d="M70 56 v10"/><path d="M76 56 v10"/><path d="M82 56 v10"/></g></svg>`,
+'까치':`<svg viewBox="0 0 200 120"><path d="M120 66 L 178 44 L 128 82Z" fill="#22333F"/><ellipse cx="96" cy="62" rx="36" ry="24" fill="#22333F"/><path d="M72 70 C 82 84 112 84 122 70 C 112 78 82 78 72 70Z" fill="#FFFFFF"/><ellipse cx="96" cy="70" rx="20" ry="11" fill="#FFFFFF"/><circle cx="66" cy="50" r="14" fill="#22333F"/><path d="M52 50 l-12 4 l12 4Z" fill="#5C7382"/><circle cx="62" cy="46" r="2.6" fill="#FFF"/><path d="M88 86 v10 M104 86 v10" stroke="#5C7382" stroke-width="2.6" stroke-linecap="round"/><path d="M92 56 q10 -8 22 -4" fill="none" stroke="#5C7382" stroke-width="2"/></svg>`,
+'사자':`<svg viewBox="0 0 200 120"><circle cx="100" cy="60" r="44" fill="#B8823C"/><g fill="#8A5A26"><circle cx="100" cy="16" r="10"/><circle cx="128" cy="24" r="10"/><circle cx="146" cy="44" r="10"/><circle cx="150" cy="68" r="10"/><circle cx="140" cy="90" r="10"/><circle cx="120" cy="102" r="10"/><circle cx="80" cy="102" r="10"/><circle cx="60" cy="90" r="10"/><circle cx="50" cy="68" r="10"/><circle cx="54" cy="44" r="10"/><circle cx="72" cy="24" r="10"/></g><circle cx="100" cy="62" r="34" fill="#D9A85C"/><circle cx="88" cy="54" r="4" fill="#3A2A14"/><circle cx="112" cy="54" r="4" fill="#3A2A14"/><path d="M94 68 h12 l-6 8Z" fill="#3A2A14"/><path d="M100 76 q-8 8 -16 4 M100 76 q8 8 16 4" fill="none" stroke="#3A2A14" stroke-width="2" stroke-linecap="round"/></svg>`,
+'오징어':`<svg viewBox="0 0 200 120"><path d="M100 8 L 122 52 L 78 52 Z" fill="#C88AA0" stroke="#8F5670" stroke-width="2"/><rect x="80" y="44" width="40" height="34" rx="14" fill="#DBA8BA" stroke="#8F5670" stroke-width="2"/><circle cx="90" cy="64" r="5" fill="#3A2430"/><circle cx="110" cy="64" r="5" fill="#3A2430"/><g stroke="#8F5670" stroke-width="3.4" fill="none" stroke-linecap="round"><path d="M84 78 q-8 18 -16 24"/><path d="M92 80 q-3 18 -8 26"/><path d="M100 80 q0 18 0 28"/><path d="M108 80 q3 18 8 26"/><path d="M116 78 q8 18 16 24"/><path d="M78 76 q-18 14 -22 34"/><path d="M122 76 q18 14 22 34"/></g></svg>`,
+'왕대벌레':`<svg viewBox="0 0 200 120"><path d="M30 84 C 70 70 130 54 172 40" fill="none" stroke="#8A6B42" stroke-width="7" stroke-linecap="round"/><g stroke="#8A6B42" stroke-width="2.4" fill="none" stroke-linecap="round"><path d="M62 74 l-14 24"/><path d="M92 64 l-10 28"/><path d="M124 54 l-6 30"/><path d="M74 70 l12 26"/><path d="M104 60 l14 24"/><path d="M136 50 l16 22"/></g><path d="M172 40 l16 -12 M172 40 l20 -2" stroke="#8A6B42" stroke-width="2" stroke-linecap="round" fill="none"/><circle cx="168" cy="42" r="3" fill="#4A3820"/></svg>`,
+'거미':`<svg viewBox="0 0 200 120"><circle cx="100" cy="70" r="22" fill="#4A4038" stroke="#2C2620" stroke-width="2"/><circle cx="100" cy="40" r="12" fill="#4A4038" stroke="#2C2620" stroke-width="2"/><circle cx="96" cy="37" r="2.4" fill="#FFF"/><circle cx="104" cy="37" r="2.4" fill="#FFF"/><g stroke="#2C2620" stroke-width="2.6" fill="none" stroke-linecap="round"><path d="M82 58 Q 56 44 44 24"/><path d="M80 66 Q 48 60 34 48"/><path d="M80 76 Q 50 82 36 96"/><path d="M86 86 Q 66 100 60 112"/><path d="M118 58 Q 144 44 156 24"/><path d="M120 66 Q 152 60 166 48"/><path d="M120 76 Q 150 82 164 96"/><path d="M114 86 Q 134 100 140 112"/></g></svg>`
+};
+
+/* ── 카드 27장 ── */
+const DATA = [
+{name:'남세균',k:'원핵생물계',hook:'지구에 산소를 처음 채운 주인공',
+ traits:['세포 안에 핵이 뚜렷하게 보이지 않는다.','세포벽이 있다.','세포 하나로 이루어져 있다.','광합성을 하여 산소를 만든다.'],
+ hint:{nuc:0},
+ note:'광합성을 하는데도 식물계가 아닙니다. <strong>가장 먼저 확인하는 기준이 핵의 유무</strong>이기 때문이에요. 우리가 숨 쉬는 산소의 뿌리를 거슬러 올라가면 이 작은 생물이 나옵니다.'},
+{name:'대장균',k:'원핵생물계',hook:'지금 여러분 몸속에도 살고 있음',
+ traits:['핵이 뚜렷하게 보이지 않는다.','세포벽이 있다.','세포 하나로 이루어져 있다.','광합성을 하지 않고, 사람의 큰창자 속에서도 산다.'],
+ hint:{nuc:0},
+ note:'세포벽이 있다는 것만 보면 식물계나 균계와 헷갈릴 수 있습니다. <strong>세포벽은 여러 계에 두루 나타나는 특징</strong>이라, 그것만으로는 계를 정할 수 없어요.'},
+{name:'콜레라균',k:'원핵생물계',hook:'이름에 균이 있다고 균계일까?',
+ traits:['핵이 뚜렷하게 보이지 않는다.','세포벽이 있고, 꼬리처럼 생긴 편모로 움직인다.','세포 하나로 이루어져 있다.','오염된 물을 통해 사람에게 병을 일으킨다.'],
+ hint:{nuc:0},
+ note:'이름 끝의 <strong>균은 세균의 균</strong>입니다. 균계의 균(곰팡이·버섯 무리)과 글자만 같아요. 이름이 아니라 핵의 유무로 판단해야 하는 이유입니다.'},
+{name:'젖산균',k:'원핵생물계',hook:'김치와 요구르트의 새콤함 담당',
+ traits:['핵이 뚜렷하게 보이지 않는다.','세포 하나로 이루어져 있다.','김치와 요구르트를 새콤하게 만드는 젖산을 만든다.'],
+ hint:{nuc:0},
+ note:'유산균 음료 광고에서 늘 보는 그 생물입니다. 이름에 균이 붙었지만 <strong>균계가 아니라 원핵생물계</strong>예요. 콜레라균과 같은 함정입니다.'},
+{name:'포도상구균',k:'원핵생물계',hook:'포도송이처럼 모여 사는 세균',
+ traits:['핵이 뚜렷하게 보이지 않는다.','둥근 세포들이 포도송이처럼 모여 있지만, 각각은 독립된 한 개의 세포다.','상처 부위에 염증을 일으키기도 한다.'],
+ hint:{nuc:0},
+ note:'여럿이 모여 있으니 다세포생물처럼 보이지만, <strong>세포들이 그냥 붙어 있을 뿐 하나의 몸을 이루지는 않습니다.</strong> 다세포생물과는 다른 상태예요.'},
+{name:'미역',k:'원생생물계',hook:'생일 미역국의 그 미역',
+ traits:['세포에 뚜렷한 핵이 있다.','여러 개의 세포로 이루어져 있다.','실 모양의 균사는 없다.','잎처럼 보이는 부분이 있지만, 잎·줄기·뿌리로 구분되는 기관은 없다.','광합성을 한다.','바닷속 바위에 붙어 자란다.'],
+ hint:{nuc:0,hyphae:2,organ:3},
+ note:'광합성을 하고 잎처럼 생겼는데도 식물계가 아닙니다. <strong>잎·줄기·뿌리로 구분되는 기관이 없기 때문</strong>이에요. 바위를 붙잡는 부분도 뿌리가 아닙니다.'},
+{name:'다시마',k:'원생생물계',hook:'국물 맛의 비밀, 하지만 식물 아님',
+ traits:['핵이 있다.','여러 개의 세포로 이루어져 있다.','균사는 없다.','넓적한 몸이지만 잎·줄기·뿌리의 구분이 없다.','광합성을 한다.'],
+ hint:{nuc:0,hyphae:2,organ:3},
+ note:'미역과 같은 이유로 원생생물계입니다. <strong>겉모습이 식물 같아도 기관이 없으면 식물계에 넣지 않습니다.</strong>'},
+{name:'파래',k:'원생생물계',hook:'초록색이라고 다 식물은 아니다',
+ traits:['핵이 있다.','여러 개의 세포로 이루어져 있다.','균사는 없다.','얇은 초록색 몸이지만 잎·줄기·뿌리의 구분이 없다.','광합성을 한다.','얕은 바다의 바위에서 자란다.'],
+ hint:{nuc:0,hyphae:2,organ:3},
+ note:'김·미역·다시마·파래, 바다에서 광합성하는 이 무리는 전부 원생생물계입니다. <strong>색깔이 아니라 몸의 구조가 기준</strong>이에요.'},
+{name:'짚신벌레',k:'원생생물계',hook:'벌레라는 이름의 억울한 생물',
+ traits:['핵이 있다.','세포 하나로 이루어져 있다.','균사는 없다.','기관이 발달하지 않았다.','몸 둘레의 섬모를 저어 헤엄치고, 먹이를 먹는다.'],
+ hint:{nuc:0,hyphae:2,organ:3},
+ note:'움직이고 먹이도 먹지만 <strong>세포 하나뿐이라 동물계가 아닙니다.</strong> 이름은 분류 기준이 될 수 없어요. 짚신벌레는 벌레가 아닙니다.'},
+{name:'아메바',k:'원생생물계',hook:'몸의 모양이 정해져 있지 않음',
+ traits:['핵이 있다.','세포 하나로 이루어져 있다.','균사는 없다.','기관이 발달하지 않았다.','위족을 뻗어 기어 다니며 다른 생물을 잡아먹는다.'],
+ hint:{nuc:0,hyphae:2,organ:3},
+ note:'사냥까지 하는데 동물계가 아닙니다. <strong>다세포이면서 기관이 발달해야</strong> 동물계로 갑니다. 아메바는 둘 다 아니에요.'},
+{name:'표고버섯',k:'균계',hook:'우리가 먹는 부분은 몸의 일부일 뿐',
+ traits:['핵이 있다.','여러 개의 세포로 이루어져 있다.','죽은 나무 속으로 실 모양의 균사가 넓게 뻗어 있다.','갓과 자루가 있지만, 잎·줄기·뿌리 같은 기관은 아니다.','광합성을 하지 않고, 죽은 생물을 분해해 양분을 얻는다.'],
+ hint:{nuc:0,hyphae:2},
+ note:'갓과 자루는 <strong>홀씨를 퍼뜨리기 위한 구조이지 기관이 아닙니다.</strong> 진짜 몸은 나무 속에 퍼진 균사예요. 마트 버섯은 빙산의 일각인 셈입니다.'},
+{name:'느타리버섯',k:'균계',hook:'식물 아님, 고기도 아님, 균계임',
+ traits:['핵이 있다.','여러 개의 세포로 이루어져 있다.','실 모양의 균사로 이루어져 있다.','광합성을 하지 않고, 죽은 나무를 분해해 양분을 얻는다.'],
+ hint:{nuc:0,hyphae:2},
+ note:'채소 코너에서 팔리지만 채소(식물)가 아닙니다. <strong>광합성을 못 하고 균사로 이루어졌다는 점</strong>에서 곰팡이와 한 무리예요.'},
+{name:'푸른곰팡이',k:'균계',hook:'인류를 구한 곰팡이',
+ traits:['핵이 있다.','실 모양의 균사가 얽혀 자란다.','광합성을 하지 않고, 다른 생물에서 양분을 얻는다.','최초의 항생제인 페니실린이 이 곰팡이에서 나왔다.'],
+ hint:{nuc:0,hyphae:1},
+ note:'버섯과 생김새는 전혀 다르지만 <strong>균사를 가진다는 공통점으로 같은 계</strong>가 됩니다. 겉모습이 아니라 고유한 특징으로 묶는다는 게 이런 뜻이에요.'},
+{name:'누룩곰팡이',k:'균계',hook:'된장과 간장을 만드는 일꾼',
+ traits:['핵이 있다.','실 모양의 균사가 얽혀 자란다.','광합성을 하지 않고, 곡식을 분해하며 양분을 얻는다.','된장·간장을 담글 때 콩을 발효시킨다.'],
+ hint:{nuc:0,hyphae:1},
+ note:'급식에 나온 된장국에는 이 곰팡이의 작품이 들어 있습니다. <strong>분해자 역할을 하는 균계</strong>가 우리 식탁을 책임지고 있어요.'},
+{name:'효모',k:'균계',hook:'빵을 부풀리는 한 개짜리 세포',
+ traits:['핵이 있다.','특이하게 세포 하나로 살아가며, 실 모양의 균사가 없다.','곰팡이·버섯과 같은 무리로, 양분을 얻는 방식이 같다.','빵 반죽 속에서 이산화 탄소를 내보내 반죽을 부풀린다.'],
+ hint:{nuc:0,hyphae:2},
+ note:'균계인데 균사가 없는 <strong>예외 카드</strong>입니다. 질문에 "대부분"이라는 말이 붙은 이유가 바로 효모 때문이에요. 검색표가 만능이 아니라는 걸 보여 주는 생물입니다.'},
+{name:'민들레',k:'식물계',hook:'보도블록 틈에서도 사는 생존왕',
+ traits:['핵과 세포벽이 있다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','잎·줄기·뿌리가 발달해 있다.','광합성을 해서 스스로 양분을 얻는다.','씨앗에 갓털이 있어 바람을 타고 퍼진다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'민들레 홀씨라고 부르는 건 사실 홀씨가 아니라 <strong>갓털 달린 씨앗</strong>입니다. 홀씨로 번식하는 건 고사리 쪽이에요.'},
+{name:'소나무',k:'식물계',hook:'네 갈림길을 끝까지 가는 모범생',
+ traits:['핵과 세포벽이 있다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','잎·줄기·뿌리가 발달해 있다.','광합성을 해서 스스로 양분을 얻는다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'모든 질문을 통과해 가장 마지막에 도착하는 카드입니다. <strong>식물계와 동물계는 광합성 여부에서만 갈립니다.</strong>'},
+{name:'고사리',k:'식물계',hook:'꽃 없이 3억 년을 버틴 식물',
+ traits:['핵과 세포벽이 있다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','잎·줄기·뿌리가 발달해 있다.','광합성을 해서 스스로 양분을 얻는다.','꽃이 피지 않고 홀씨로 번식한다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'꽃이 없어도 식물계입니다. <strong>꽃의 유무는 계를 나누는 기준이 아니라</strong>, 식물계 안에서 더 작은 무리를 나눌 때 쓰는 기준이에요.'},
+{name:'매발톱꽃',k:'식물계',hook:'꽃잎 뒤 갈고리가 매의 발톱을 닮음',
+ traits:['핵과 세포벽이 있다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','잎·줄기·뿌리가 발달해 있다.','광합성을 해서 스스로 양분을 얻는다.','봄에 보라색 꽃이 핀다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'이름은 동물 같지만 당연히 식물입니다. <strong>이름에 속지 않기</strong>, 이 활동의 반복되는 교훈이죠.'},
+{name:'끈끈이주걱',k:'식물계',hook:'곤충을 잡아먹는 식물?!',
+ traits:['핵과 세포벽이 있다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','잎·줄기·뿌리가 발달해 있다.','광합성을 해서 스스로 양분을 얻는다.','잎 끝의 끈끈한 액으로 곤충을 붙잡아 부족한 양분을 보충한다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'곤충을 잡아먹는데 동물계 아니냐고요? <strong>광합성으로 양분을 만들 수 있으니 식물계</strong>입니다. 곤충은 어디까지나 영양 보충제일 뿐이에요.'},
+{name:'개나리',k:'식물계',hook:'봄을 노랗게 여는 나무',
+ traits:['핵과 세포벽이 있다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','잎·줄기·뿌리가 발달해 있다.','광합성을 해서 스스로 양분을 얻는다.','이른 봄, 잎보다 노란 꽃이 먼저 핀다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'학교 담장의 그 개나리입니다. 흔한 생물일수록 <strong>기준을 따라 분류해 보면 확실히 아는 것</strong>이 됩니다.'},
+{name:'상어',k:'동물계',hook:'공룡보다 먼저 지구에 살았음',
+ traits:['핵은 있지만 세포벽이 없다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','눈, 아가미, 심장 같은 기관이 발달해 있다.','광합성을 하지 않고 다른 생물을 먹어 양분을 얻는다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'동물계는 <strong>세포벽이 없는 유일한 계</strong>입니다. 이 기준 하나만으로도 식물·균계와 구별할 수 있어요.'},
+{name:'까치',k:'동물계',hook:'거울 속 자기를 알아보는 새',
+ traits:['핵은 있지만 세포벽이 없다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','눈, 날개, 심장 같은 기관이 발달해 있다.','광합성을 하지 않고 곤충과 열매를 먹는다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'까치는 거울 실험을 통과한 몇 안 되는 동물 중 하나입니다. 물론 계를 정할 때는 <strong>똑똑함이 아니라 몸의 특징</strong>만 봅니다.'},
+{name:'사자',k:'동물계',hook:'하루 20시간 자는 백수의 왕',
+ traits:['핵은 있지만 세포벽이 없다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','기관이 발달해 있다.','광합성을 하지 않고 다른 동물을 사냥해 먹는다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'분류 기준 앞에서는 사자도 짚신벌레 옆 카드일 뿐입니다. <strong>크기·강함·인기는 분류 기준이 아니에요.</strong>'},
+{name:'오징어',k:'동물계',hook:'심장이 3개, 피는 파란색',
+ traits:['핵은 있지만 세포벽이 없다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','눈, 심장, 다리 같은 기관이 발달해 있다.','광합성을 하지 않고 작은 물고기를 잡아먹는다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'뼈도 없고 생김새도 낯설지만 당당한 동물계입니다. <strong>척추의 유무는 계를 나눈 다음에 쓰는 기준</strong>이에요.'},
+{name:'왕대벌레',k:'동물계',hook:'나뭇가지인 척 20년째 연기 중',
+ traits:['핵은 있지만 세포벽이 없다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','눈, 다리, 소화 기관이 발달해 있다.','광합성을 하지 않고 나뭇잎을 먹는다.','몸이 나뭇가지와 똑같이 생겨 천적의 눈을 피한다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'나뭇가지처럼 생겼다고 식물계에 넣으면 안 됩니다. <strong>겉모습을 흉내 내는 것과 실제 몸의 특징은 별개</strong>예요. 변이와 생존의 좋은 예이기도 합니다.'},
+{name:'거미',k:'동물계',hook:'곤충이 아닙니다, 다리 8개',
+ traits:['핵은 있지만 세포벽이 없다.','여러 개의 세포로 이루어져 있고, 균사는 없다.','눈, 다리, 소화 기관이 발달해 있다.','광합성을 하지 않고 거미줄로 곤충을 잡아먹는다.'],
+ hint:{nuc:0,hyphae:1,organ:2,photo:3},
+ note:'거미는 다리가 8개라 곤충(6개)이 아닙니다. 하지만 <strong>계 수준에서는 곤충이든 아니든 똑같이 동물계</strong>예요. 더 잘게 나누는 건 계 아래 단계의 일입니다.'}
+];
+
+/* 전체 도전 순서: 계가 섞이도록 고정 배치 (헷갈리는 카드 앞배치) */
+const RUN_ORDER=['미역','표고버섯','짚신벌레','남세균','끈끈이주걱','콜레라균','효모','왕대벌레','파래','젖산균','푸른곰팡이','오징어','아메바','개나리','포도상구균','느타리버섯','다시마','거미','대장균','고사리','누룩곰팡이','까치','민들레','상어','매발톱꽃','사자','소나무'];
+const IDX = Object.fromEntries(DATA.map((o,i)=>[o.name,i]));
+
+/* ── state ── */
+let deck=[], cur=0, step=0, stumbled=false, results=[], single=false;
+let streak=0, best=0;
+const doneMap={}; // name → kingdom (완료 표시용)
+
+const $=id=>document.getElementById(id);
+const intro=$('intro'),board=$('board'),summary=$('summary'),
+      routeBox=$('routeBox'),stations=$('stations'),resultBox=$('resultBox'),
+      traitList=$('traitList'),counter=$('counter'),streakChip=$('streakChip'),homeBtn=$('homeBtn');
+
+/* 홈 화면 카드 목록 (가나다순 — 계 순서로 나열하면 답이 드러나므로) */
+function renderGrid(){
+  const names=DATA.map(o=>o.name).sort((a,b)=>a.localeCompare(b,'ko'));
+  $('cardGrid').innerHTML=names.map(n=>{
+    const k=doneMap[n];
+    return `<button class="org-btn${k?' done':''}" ${k?`style="--kc:${KC[k]}"`:''} data-name="${n}">${n}</button>`;
+  }).join('');
+  $('cardGrid').querySelectorAll('.org-btn').forEach(b=>{
+    b.addEventListener('click',()=>beginSingle(b.dataset.name));
+  });
+}
+
+function goHome(){
+  board.hidden=true;summary.hidden=true;intro.hidden=false;
+  counter.hidden=true;streakChip.hidden=true;homeBtn.hidden=true;
+  renderGrid();
+}
+
+function beginRun(shuffle){
+  deck=RUN_ORDER.map(n=>IDX[n]);
+  if(shuffle){for(let i=deck.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[deck[i],deck[j]]=[deck[j],deck[i]];}}
+  single=false;cur=0;results=[];streak=0;best=0;
+  intro.hidden=true;summary.hidden=true;board.hidden=false;
+  counter.hidden=false;homeBtn.hidden=false;
+  updateStreak();loadCard();
+}
+
+function beginSingle(name){
+  deck=[IDX[name]];single=true;cur=0;results=[];
+  intro.hidden=true;summary.hidden=true;board.hidden=false;
+  counter.hidden=true;homeBtn.hidden=false;
+  loadCard();
+}
+
+function updateStreak(){
+  if(!single&&streak>=2){streakChip.hidden=false;streakChip.textContent=`연속 ${streak}장 한 번에 도착!`;}
+  else streakChip.hidden=true;
+}
+
+function loadCard(){
+  const o=DATA[deck[cur]];
+  step=0;stumbled=false;
+  routeBox.classList.remove('done');
+  routeBox.style.removeProperty('--kc');
+  resultBox.innerHTML='';stations.innerHTML='';
+  if(!single)counter.textContent=`${String(cur+1).padStart(2,'0')} / ${deck.length}`;
+  $('specNo').textContent = single ? '골라서 풀기' : `표본 ${String(cur+1).padStart(2,'0')} / ${deck.length}`;
+  $('specName').textContent=o.name;
+  $('specHook').textContent=o.hook;
+  $('specArt').innerHTML=ART[o.name]||'';
+  traitList.innerHTML=o.traits.map((t,i)=>`<li data-i="${i}">${t}</li>`).join('');
+  askNext();
+}
+
+function askNext(){
+  const o=DATA[deck[cur]];
+  const [key]=PATHS[o.k][step];
+  const li=document.createElement('li');
+  li.className='station current';
+  li.innerHTML=`<span class="dot"></span>
+    <div class="q">${Q[key]}</div>
+    <div class="answers">
+      <button class="ans" data-v="y">예</button>
+      <button class="ans" data-v="n">아니요</button>
+    </div>
+    <div class="hintSlot" aria-live="polite"></div>`;
+  stations.appendChild(li);
+  li.querySelectorAll('.ans').forEach(b=>b.addEventListener('click',()=>answer(b.dataset.v)));
+  li.querySelector('.ans').focus({preventScroll:true});
+}
+
+function answer(v){
+  const o=DATA[deck[cur]];
+  const path=PATHS[o.k];
+  const [key,correct]=path[step];
+  const li=stations.lastElementChild;
+
+  if(v!==correct){
+    stumbled=true;
+    const idx=o.hint[key];
+    traitList.querySelectorAll('li').forEach(el=>el.classList.remove('flag'));
+    if(idx!==undefined){
+      const target=traitList.querySelector(`li[data-i="${idx}"]`);
+      if(target)target.classList.add('flag');
+      li.querySelector('.hintSlot').innerHTML=
+        `<div class="hint"><b>다시 볼까요.</b> 관찰 기록의 노란 줄을 확인해 보세요. — “${o.traits[idx]}”</div>`;
+    }else{
+      li.querySelector('.hintSlot').innerHTML=
+        `<div class="hint"><b>다시 볼까요.</b> 관찰 기록을 처음부터 천천히 읽어 보세요.</div>`;
+    }
+    return;
+  }
+
+  traitList.querySelectorAll('li').forEach(el=>el.classList.remove('flag'));
+  li.classList.remove('current');
+  li.querySelector('.answers').remove();
+  const slot=li.querySelector('.hintSlot');if(slot)slot.remove();
+  const tag=document.createElement('div');
+  tag.className='a';tag.textContent=(v==='y'?'예':'아니요');
+  li.appendChild(tag);
+
+  step++;
+  if(step<path.length)askNext();
+  else finish();
+}
+
+function finish(){
+  const o=DATA[deck[cur]];
+  doneMap[o.name]=o.k;
+  results.push({name:o.name,kingdom:o.k,clean:!stumbled});
+  if(!single){
+    if(!stumbled){streak++;best=Math.max(best,streak);}else streak=0;
+    updateStreak();
+  }
+
+  routeBox.style.setProperty('--kc',KC[o.k]);
+  routeBox.classList.add('done');
+
+  const last=!single&&cur===deck.length-1;
+  const nextLabel = single ? '홈으로' : (last ? '결과 보기' : '다음 생물');
+  resultBox.innerHTML=`
+    <div class="result">
+      <div class="verdict">
+        <span class="label">도착</span>
+        <span class="name">${o.k}</span>
+        ${stumbled?'':'<span class="badge">한 번에 도착</span>'}
+      </div>
+      <p class="note">${o.note}</p>
+      <div class="start-row">
+        <button class="btn big" id="next">${nextLabel}</button>
+        <button class="btn ghost" id="retry">이 카드 다시 풀기</button>
+      </div>
+    </div>`;
+  $('next').addEventListener('click',()=>{
+    if(single)goHome();
+    else if(last)showSummary();
+    else{cur++;loadCard();}
+  });
+  $('next').focus({preventScroll:true});
+  $('retry').addEventListener('click',()=>{
+    const r=results.pop();
+    if(!single&&r&&r.clean){streak=Math.max(0,streak-1);}
+    loadCard();
+  });
+}
+
+function showSummary(){
+  board.hidden=true;counter.hidden=true;streakChip.hidden=true;homeBtn.hidden=true;
+  summary.hidden=false;
+  const clean=results.filter(r=>r.clean).length;
+  $('cleanCount').textContent=clean;
+  $('bestStreak').textContent=best;
+  $('summaryLine').textContent = clean===results.length
+    ?'모든 갈림길을 한 번에 통과했습니다. 검색표를 완전히 익혔네요.'
+    :'길을 되짚었던 카드는 어느 관찰 기록 때문이었는지 짝과 이야기해 봅시다.';
+
+  const byK={};Object.keys(KC).forEach(k=>byK[k]=[]);
+  results.forEach(r=>byK[r.kingdom].push(r.name));
+  $('tally').innerHTML=Object.keys(KC).map(k=>`
+    <div class="tally-card" style="--kc:${KC[k]}">
+      <h4>${k} <span style="font-weight:600;font-size:12px;color:var(--muted)">${byK[k].length}장</span></h4>
+      <ul>${byK[k].map(n=>`<li>${n}</li>`).join('')||'<li style="color:#93A7B3">—</li>'}</ul>
+    </div>`).join('');
+}
+
+/* ── wiring ── */
+$('startOrder').addEventListener('click',()=>beginRun(false));
+$('startShuffle').addEventListener('click',()=>beginRun(true));
+$('goHome').addEventListener('click',goHome);
+$('againShuffle').addEventListener('click',()=>beginRun(true));
+homeBtn.addEventListener('click',goHome);
+$('mapBtn').addEventListener('click',()=>$('mapDlg').showModal());
+$('mapClose').addEventListener('click',()=>$('mapDlg').close());
+
+renderGrid();
+</script>
+</body>
+</html>
