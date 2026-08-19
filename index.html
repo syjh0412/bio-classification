@@ -58,6 +58,9 @@ button:focus-visible{outline:3px solid var(--k-monera);outline-offset:2px}
 .intro p{max-width:62ch;color:#33505F;margin-bottom:14px}
 .intro .lead{font-size:19px;font-weight:600;color:var(--ink);letter-spacing:-.02em}
 .start-row{display:flex;flex-wrap:wrap;gap:10px;align-items:center;margin-top:8px}
+.kingdom-strip{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin:18px 0 20px}
+.kingdom-strip .strip-label{font-size:12px;font-weight:700;letter-spacing:.1em;color:var(--muted);margin-right:4px}
+.kchip{font-size:12px;font-weight:700;padding:5px 12px;border-radius:999px;color:#fff;letter-spacing:-.01em}
 
 .card-grid-wrap{margin-top:26px;border-top:1px dashed var(--rule);padding-top:22px}
 .card-grid-wrap h3{font-size:12px;font-weight:700;letter-spacing:.14em;color:var(--muted);margin-bottom:4px}
@@ -181,6 +184,15 @@ svg.key{display:block;width:100%;min-width:560px;height:auto}
 <section class="panel intro" id="intro">
   <p class="lead">생물 카드 27장. 관찰 기록만 보고 갈림길을 통과해, 다섯 개의 계 중 하나에 도착하세요.</p>
   <p>카드에 계는 적혀 있지 않습니다. 이름에 속지 마세요. <b>짚신벌레</b>는 벌레가 아니고, <b>젖산균</b>은 균계가 아닙니다. 길을 잘못 들면 다시 봐야 할 관찰 기록에 노란 표시가 뜹니다.</p>
+
+  <div class="kingdom-strip">
+    <span class="strip-label">도착지는 다섯 곳</span>
+    <span class="kchip" style="background:var(--k-monera)">원핵생물계</span>
+    <span class="kchip" style="background:var(--k-protist)">원생생물계</span>
+    <span class="kchip" style="background:var(--k-fungi)">균계</span>
+    <span class="kchip" style="background:var(--k-plant)">식물계</span>
+    <span class="kchip" style="background:var(--k-animal)">동물계</span>
+  </div>
 
   <div class="start-row">
     <button class="btn big" id="startOrder">27장 전체 도전</button>
